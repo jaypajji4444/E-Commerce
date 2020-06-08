@@ -33,7 +33,6 @@ app.use(fileUpload());
 // @route: Get /
 // desc:all items
 app.get("/items", (req, res) => {
-    console.log("Request")
     Item.find({}).then(data => res.json(data)).catch(err => res.status(201).json("success:false"))
 })
 
@@ -47,14 +46,10 @@ app.post("/signup", (req, res) => {
     User.findOne({ email })
         .then(user => {
             if (user) {
-                console.log("helloo")
                 return res.json({ success: false, msg: "User already exists" })
                 //res.status(400).json({msg:"User already Exits"})
             }
         })
-
-
-
     const newUser = new User({
         email: email,
         password: password
@@ -77,7 +72,7 @@ app.post("/signup", (req, res) => {
                         })
                     })
                 })
-                .catch(err => console.log(err))
+                .catch(err => res.status(401).json(err))
         })
     })
 })
@@ -109,7 +104,7 @@ app.post("/login", (req, res) => {
                     })
                 })
         })
-        .catch(err => console.log(err))
+        .catch(err => res.status(401).json(err))
 
 })
 
@@ -117,23 +112,20 @@ app.post("/login", (req, res) => {
 // Endpoint: /upload
 // #desc: Add new Item
 app.post('/upload', (req, res) => {
-
-    console.log(req.files)
     const newItemData = JSON.parse(req.body.data)
     newItemData.price = parseInt(newItemData.price)
-    console.log(newItemData)
     if (req.files === null) {
         return res.status(400).json({ msg: 'No file uploaded' });
     }
     const file = req.files.file;
     file.mv(`${__dirname}/my-app/public/images/${file.name}`, err => {
         if (err) {
-            console.error(err);
+        
             return res.status(500).send(err);
         }
         Item.insertMany(newItemData).then(data => {
             res.json({ fileName: file.name, filePath: `/uploads/${file.name}`, data: data });
-        }).catch(err => console.log(err))
+        }).catch(err => res.status(201).json(err))
     });
 });
 
